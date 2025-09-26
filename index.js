@@ -85,12 +85,12 @@ global.botname = "LUCKY TECH HUB BOT";
 global.themeemoji = "•";
 const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code");
 const useMobile = process.argv.includes("--mobile");
-const rl = process.stdout.isTTY ? readline.createInterface({
+const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
-}) : null;
+});
 const question = text => {
-  return rl ? new Promise(resolve => rl.question(text, resolve)) : Promise.resolve(settings.ownerNumber || phoneNumber);
+  return new Promise(resolve => rl.question(text, resolve));
 };
 async function startXeonBotInc() {
   let {
@@ -217,33 +217,36 @@ async function startXeonBotInc() {
       connection: connection,
       lastDisconnect: lastDisconnect
     } = update;
-    if (pairingCode && !XeonBotInc.authState.creds.registered) {
-      if (useMobile) {
-        throw new Error("Cannot use pairing code with mobile api");
-      }
-      let phoneNumber;
-      if (!!global.phoneNumber) {
-        phoneNumber = global.phoneNumber;
-      } else {
-        phoneNumber = await question(chalk.blue(chalk.bgGreen("Please type your WhatsApp number 😍\nFormat: 6281376552730 (without + or spaces) : ")));
-      }
-      phoneNumber = phoneNumber.replace(/[^0-9]/g, "");
-      const {
-        isValid
-      } = require("./lib/myfunc");
-      if (!isValid("+" + phoneNumber)) {
-        console.log(chalk.red("Invalid phone number. Please enter your full international number (e.g., 15551234567 for US, 447911123456 for UK, etc.) without + or spaces."));
-        process.exit(1);
-      }
-      try {
-        let code = await XeonBotInc.requestPairingCode(phoneNumber);
-        code = code?.match(/.{1,4}/g)?.join("-") || code;
-        console.log(chalk.black(chalk.bgGreen("Your Pairing Code : ")), chalk.black(chalk.white(code)));
-        console.log(chalk.yellow("\nPlease enter this code in your WhatsApp app:\n1. Open WhatsApp\n2. Go to Settings > Linked Devices\n3. Tap \"Link a Device\"\n4. Enter the code shown above"));
-      } catch (e) {
-        console.log("Error requesting pairing code:", e);
-        console.log(chalk.red("Failed to get pairing code. Please check your phone number and try again."));
-      }
+    if (connection === 'open') {
+		if (pairingCode && !XeonBotInc.authState.creds.registered) {
+			if (useMobile) {
+				throw new Error("Cannot use pairing code with mobile api");
+			}
+			let phoneNumber;
+			if (!!global.phoneNumber) {
+				phoneNumber = global.phoneNumber;
+			} else {
+				phoneNumber = await question(chalk.blue(chalk.bgGreen("Please type your WhatsApp number 😍\nFormat: 6281376552730 (without + or spaces) : ")));
+			}
+			phoneNumber = phoneNumber.replace(/[^0-9]/g, "");
+			const {
+				isValid
+			} = require("./lib/myfunc");
+			if (!isValid("+" + phoneNumber)) {
+				console.log(chalk.red("Invalid phone number. Please enter your full international number (e.g., 15551234567 for US, 447911123456 for UK, etc.) without + or spaces."));
+				process.exit(1);
+			}
+			try {
+				let code = await XeonBotInc.requestPairingCode(phoneNumber);
+				code = code?.match(/.{1,4}/g)?.join("-") || code;
+				console.log(chalk.black(chalk.bgGreen("Your Pairing Code : ")), chalk.black(chalk.white(code)));
+				console.log(chalk.yellow("\nPlease enter this code in your WhatsApp app:\n1. Open WhatsApp\n2. Go to Settings > Linked Devices\n3. Tap \"Link a Device\"\n4. Enter the code shown above"));
+        rl.close();
+			} catch (e) {
+				console.log("Error requesting pairing code:", e);
+				console.log(chalk.red("Failed to get pairing code. Please check your phone number and try again."));
+			}
+		}
     }
     if (connection == "open") {
       console.log(chalk.magenta(" "));
@@ -398,7 +401,7 @@ async function startXeonBotInc() {
             }
           } catch {}
           if (!callSet.has(chatId)) {
-            callSet.add(chatId);
+            callSet..add(chatId);
             setTimeout(() => callSet.delete(chatId), 60000);
             await XeonBotInc.sendMessage(chatId, {
               "text": "*📵 Calls are not allowed on this number unless you have permission 🚫.*"
