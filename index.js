@@ -86,12 +86,17 @@ global.botname = "LUCKY TECH HUB BOT";
 global.themeemoji = "•";
 const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code");
 const useMobile = process.argv.includes("--mobile");
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
 const question = text => {
-  return new Promise(resolve => rl.question(text, resolve));
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  return new Promise(resolve => {
+    rl.question(text, answer => {
+      rl.close();
+      resolve(answer);
+    });
+  });
 };
 async function startXeonBotInc() {
   let {
