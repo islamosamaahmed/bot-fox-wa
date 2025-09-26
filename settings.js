@@ -1,7 +1,7 @@
 const settings = {
   packname: 'Lucky Tech Hub Bot',
   author: '‎',
-  botName: "L   T   H  Bot",
+  botName: "𝙵𝙾𝚇𝙱𝙾𝚃 𝚅 2.𝟶",
   botOwner: 'Lucky 218', // Your name
   ownerNumber: '25678XXXXXXX', //Set your number here without + symbol, just add country code & number without any space
   giphyApiKey: 'qnl7ssQChTdPjsKta2Ax2LMaGXz303tq',
