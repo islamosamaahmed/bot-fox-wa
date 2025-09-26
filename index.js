@@ -239,7 +239,6 @@ async function startXeonBotInc() {
 				code = code?.match(/.{1,4}/g)?.join("-") || code;
 				console.log(chalk.black(chalk.bgGreen("Your Pairing Code : ")), chalk.black(chalk.white(code)));
 				console.log(chalk.yellow("\nPlease enter this code in your WhatsApp app:\n1. Open WhatsApp\n2. Go to Settings > Linked Devices\n3. Tap \"Link a Device\"\n4. Enter the code shown above"));
-        rl.close();
 			} catch (e) {
 				console.log("Error requesting pairing code:", e);
 				console.log(chalk.red("Failed to get pairing code. Please check your phone number and try again."));
