@@ -28,7 +28,8 @@ const {
   fetch,
   await,
   sleep,
-  reSize
+  reSize,
+  isValid
 } = require("./lib/myfunc");
 const {
   default: makeWASocket,
@@ -229,9 +230,6 @@ async function startXeonBotInc() {
 				phoneNumber = await question(chalk.blue(chalk.bgGreen("Please type your WhatsApp number 😍\nFormat: 6281376552730 (without + or spaces) : ")));
 			}
 			phoneNumber = phoneNumber.replace(/[^0-9]/g, "");
-			const {
-				isValid
-			} = require("./lib/myfunc");
 			if (!isValid("+" + phoneNumber)) {
 				console.log(chalk.red("Invalid phone number. Please enter your full international number (e.g., 15551234567 for US, 447911123456 for UK, etc.) without + or spaces."));
 				process.exit(1);
