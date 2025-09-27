@@ -218,7 +218,7 @@ async function startXeonBotInc() {
       lastDisconnect: lastDisconnect
     } = update;
     if (connection === 'open') {
-		if (pairingCode && !XeonBotInc.authState.creds.registered) {
+		if (process.stdout.isTTY && pairingCode && !XeonBotInc.authState.creds.registered) {
 			if (useMobile) {
 				throw new Error("Cannot use pairing code with mobile api");
 			}
