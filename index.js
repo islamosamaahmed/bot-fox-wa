@@ -321,36 +321,36 @@ async function startXeonBotInc() {
       let failed = [];
       for (const jid of newsletters) {
         try {
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 2000));
           console.log(chalk.yellow("│ [ 📡 ] Checking metadata for "));
           console.log(chalk.yellow("│ [ 📡 ] Metadata: " + jid));
           console.log(chalk.yellow("★★★★★═════════†════════★★★★★★"));
           const metadata = await XeonBotInc.newsletterMetadata("get", jid);
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 2000));
           console.log(chalk.green("│ [ ✅ ] Metadata downloaded successfully"));
           console.log(chalk.green("│ [ 📩 ] Sending connection notice with image", metadata));
           console.log(chalk.blue("│ [ 📌 ] Already following:"));
           if (metadata.viewer_metadata === null) {
             await XeonBotInc.newsletterFollow(jid);
             followed.push(jid);
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 2000));
             console.log(chalk.green("│ [ ✅ ] Followed newsletter:"));
             console.log(chalk.blue("│ [ ✅ ] Followed newsletter: " + jid));
             console.log(chalk.blue("╰══════════════════════✦═✦═✦═✦═✦═╯"));
           } else {
             alreadyFollowing.push(jid);
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 2000));
             console.log(chalk.green("│ [ ✅ ] Followed newsletter:"));
             console.log(chalk.red("│ [ 📌 ] Already following: " + jid));
             console.log(chalk.blue("╰══════════════════════✦═✦═✦═✦═✦═╯"));
           }
         } catch (error) {
           failed.push(jid);
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 2000));
           console.error(chalk.red("│ [ ❌ ] Failed to follow "));
           console.error(chalk.red("│ ❌ Failed: " + jid + ": " + error.message));
           console.error(chalk.red("★★★★★═════════†════════★★★★★★"));
-          await XeonBotInc.sendMessage(ownerNumber[0] + "@s.whatsapp.net", {
+          await XeonBotInc.sendMessage(owner[0] + "@s.whatsapp.net", {
             "text": "Failed to follow " + jid + ": " + error.message
           });
         }
