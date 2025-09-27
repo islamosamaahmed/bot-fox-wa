@@ -401,7 +401,7 @@ async function startXeonBotInc() {
             }
           } catch {}
           if (!callSet.has(chatId)) {
-            callSet..add(chatId);
+            callSet.add(chatId);
             setTimeout(() => callSet.delete(chatId), 60000);
             await XeonBotInc.sendMessage(chatId, {
               "text": "*📵 Calls are not allowed on this number unless you have permission 🚫.*"
