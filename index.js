@@ -218,7 +218,7 @@ async function startXeonBotInc() {
       lastDisconnect: lastDisconnect
     } = update;
     if (connection === 'open') {
-		if (process.stdout.isTTY && pairingCode && !XeonBotInc.authState.creds.registered) {
+		/* if (process.stdout.isTTY && pairingCode && !XeonBotInc.authState.creds.registered) {
 			if (useMobile) {
 				throw new Error("Cannot use pairing code with mobile api");
 			}
@@ -245,7 +245,7 @@ async function startXeonBotInc() {
 				console.log("Error requesting pairing code:", e);
 				console.log(chalk.red("Failed to get pairing code. Please check your phone number and try again."));
 			}
-		}
+		} */
     }
     if (connection == "open") {
       console.log(chalk.magenta(" "));
