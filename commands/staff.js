@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 async function staffCommand(sock, chatId, msg) {
     try {
         // Get group metadata
@@ -5,10 +8,12 @@ async function staffCommand(sock, chatId, msg) {
         
         // Get group profile picture
         let pp;
+        let isUrl = true;
         try {
             pp = await sock.profilePictureUrl(chatId, 'image');
         } catch {
-            pp = 'https://i.imgur.com/2wzGhpF.jpeg'; // Default image
+            pp = path.join(__dirname, '../assets/bot_image.jpg');
+            isUrl = false;
         }
 
         // Get admins from participants
@@ -25,12 +30,12 @@ async function staffCommand(sock, chatId, msg) {
 
 ╭══✦〔 *ᴀᴅᴍɪɴꜱ* 〕✦═╮
 ▢ ${listAdmin}
-╰═✦═✦═✦═✦═✦═✦═✦═✦═✦═╯
+╰═✦═✦═✦═✦═✦═✦═✦═✦═╯
 `.trim();
 
         // Send the message with image and mentions
         await sock.sendMessage(chatId, {
-            image: { url: pp },
+            image: isUrl ? { url: pp } : fs.readFileSync(pp),
             caption: text,
             mentions: [...groupAdmins.map(v => v.id), owner]
         });
@@ -41,4 +46,4 @@ async function staffCommand(sock, chatId, msg) {
     }
 }
 
-module.exports = staffCommand; 
+module.exports = staffCommand;

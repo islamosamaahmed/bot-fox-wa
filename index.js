@@ -28,7 +28,8 @@ const {
   fetch,
   await,
   sleep,
-  reSize
+  reSize,
+  isValid
 } = require("./lib/myfunc");
 const {
   default: makeWASocket,
@@ -81,16 +82,21 @@ setInterval(() => {
 }, 30000);
 let phoneNumber = "911234567890";
 let owner = JSON.parse(fs.readFileSync("./data/owner.json"));
-global.botname = "LUCKY TECH HUB BOT";
+global.botname = "FOXBOT V2";
 global.themeemoji = "•";
 const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code");
 const useMobile = process.argv.includes("--mobile");
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
 const question = text => {
-  return new Promise(resolve => rl.question(text, resolve));
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  return new Promise(resolve => {
+    rl.question(text, answer => {
+      rl.close();
+      resolve(answer);
+    });
+  });
 };
 async function startXeonBotInc() {
   let {
@@ -158,7 +164,7 @@ async function startXeonBotInc() {
             "isForwarded": true,
             "forwardedNewsletterMessageInfo": {
               "newsletterJid": "120363420656466131@newsletter",
-              "newsletterName": "LUCKY TECH HUB BOT",
+              "newsletterName": "FOXBOT V2",
               "serverMessageId": -1
             }
           }
@@ -229,9 +235,6 @@ async function startXeonBotInc() {
 				phoneNumber = await question(chalk.blue(chalk.bgGreen("Please type your WhatsApp number 😍\nFormat: 6281376552730 (without + or spaces) : ")));
 			}
 			phoneNumber = phoneNumber.replace(/[^0-9]/g, "");
-			const {
-				isValid
-			} = require("./lib/myfunc");
 			if (!isValid("+" + phoneNumber)) {
 				console.log(chalk.red("Invalid phone number. Please enter your full international number (e.g., 15551234567 for US, 447911123456 for UK, etc.) without + or spaces."));
 				process.exit(1);
@@ -241,7 +244,6 @@ async function startXeonBotInc() {
 				code = code?.match(/.{1,4}/g)?.join("-") || code;
 				console.log(chalk.black(chalk.bgGreen("Your Pairing Code : ")), chalk.black(chalk.white(code)));
 				console.log(chalk.yellow("\nPlease enter this code in your WhatsApp app:\n1. Open WhatsApp\n2. Go to Settings > Linked Devices\n3. Tap \"Link a Device\"\n4. Enter the code shown above"));
-        rl.close();
 			} catch (e) {
 				console.log("Error requesting pairing code:", e);
 				console.log(chalk.red("Failed to get pairing code. Please check your phone number and try again."));
@@ -251,24 +253,24 @@ async function startXeonBotInc() {
     if (connection == "open") {
       console.log(chalk.magenta(" "));
       console.log(chalk.yellow("│ [ 🟠 ] Connecting to WhatsApp ⏳️..."));
-      console.log(chalk.green("│ [ 🪩 ] L T H Bot Connected Successfully"));
+      console.log(chalk.green("│ [ 🪩 ] FOXBOT V2 Connected Successfully"));
       console.log(chalk.cyan(" "));
-      const ownerName = "Tomilucky218";
-      const repoUrl = "https://github.com/Tomilucky218/Lucky-XD2";
-      const youtubeChannel = "LUCKY TECH HUB";
+      const ownerName = "FOX";
+      const repoUrl = "https://github.com/foxbot/FOXBOT-V2";
+      const youtubeChannel = "FOXBOT";
       const channelLink = "https://whatsapp.com/channel/0029VbAnuvT6RGJ9Qrf3NJ0L";
       const botNumber = XeonBotInc.user.id.split(":")[0] + "@s.whatsapp.net";
       await XeonBotInc.sendMessage(botNumber, {
         "image": {
           "url": "https://files.catbox.moe/suqejh.jpg"
         },
-        "caption": "╭═✦〔 *ᴄᴏɴɴᴇᴄᴛɪᴏɴ ɴᴏᴛɪᴄᴇ* 〕✦═╮\n\n *ʟᴜᴄᴋʏ ᴛᴇᴄʜ ʜᴜʙ ʙᴏᴛ ᴄᴏɴɴᴇᴄᴛᴇᴅ!* ✅\n\n> _One of the Best Whatsapp Bot._\n\n────────────────\n> 🌟 *ꜱᴛᴀʀ ʀᴇᴘᴏ* : " + repoUrl + "\n\n> 🪄 *ꜰᴏʟʟᴏᴡ ᴜꜱ* : " + channelLink + "\n\n> 📺 *ʏᴏᴜᴛᴜʙᴇ ᴛᴜᴛᴏʀɪᴀʟꜱ* : https://youtube.com/@luckytechhub-i9u\n────────────────\n\n> © " + ownerName + " " + youtubeChannel,
+        "caption": "╭═✦〔 *ᴄᴏɴɴᴇᴄᴛɪᴏɴ ɴᴏᴛɪᴄᴇ* 〕✦═╮\n\n *FOXBOT V2 ᴄᴏɴɴᴇᴄᴛᴇᴅ!* ✅\n\n> _One of the Best Whatsapp Bot._\n\n────────────────\n> 🌟 *ꜱᴛᴀʀ ʀᴇᴘᴏ* : " + repoUrl + "\n\n> 🪄 *ꜰᴏʟʟᴏᴡ ᴜꜱ* : " + channelLink + "\n\n> 📺 *ʏᴏᴜᴛᴜʙᴇ ᴛᴜᴛᴏʀɪᴀʟꜱ* : https://youtube.com/@foxbot-i9u\n────────────────\n\n> © " + ownerName + " " + youtubeChannel,
         "contextInfo": {
           "forwardingScore": 1,
           "isForwarded": true,
           "forwardedNewsletterMessageInfo": {
             "newsletterJid": "120363420656466131@newsletter",
-            "newsletterName": "LUCKY TECH HUB BOT",
+            "newsletterName": "FOXBOT V2",
             "serverMessageId": -1
           }
         }
@@ -295,8 +297,8 @@ async function startXeonBotInc() {
       console.log(chalk.red("╭═✦✦═══════════════════✦✦═╮"));
       await delay(500);
       console.log(chalk.blue("\n" + (global.themeemoji || "•") + " WA NUMBER: " + owner));
-      console.log(chalk.magenta((global.themeemoji || "•") + " CREDIT: LUCKY TECH HUB"));
-      console.log(chalk.red((global.themeemoji || "•") + " GITHUB: luckytechhub"));
+      console.log(chalk.magenta((global.themeemoji || "•") + " CREDIT: FOXBOT"));
+      console.log(chalk.red((global.themeemoji || "•") + " GITHUB: foxbot"));
       await delay(500);
       console.log(chalk.red("╰═✦✦═══════════════════✦✦═╯"));
       await delay(500);
@@ -401,7 +403,7 @@ async function startXeonBotInc() {
             }
           } catch {}
           if (!callSet.has(chatId)) {
-            callSet..add(chatId);
+            callSet.add(chatId);
             setTimeout(() => callSet.delete(chatId), 60000);
             await XeonBotInc.sendMessage(chatId, {
               "text": "*📵 Calls are not allowed on this number unless you have permission 🚫.*"

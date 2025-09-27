@@ -1,59 +1,48 @@
-const fetch = require('node-fetch');
+const Jimp = require('jimp');
 
-async function simpCommand(sock, chatId, quotedMsg, mentionedJid, sender) {
+async function simpCommand(sock, chatId, quoted, mentioned, sender) {
+    let user;
+    if (quoted) {
+        user = quoted.sender;
+    } else if (mentioned && mentioned.length > 0) {
+        user = mentioned[0];
+    } else {
+        user = sender;
+    }
+
     try {
-        // Determine the target user
-        let who = quotedMsg 
-            ? quotedMsg.sender 
-            : mentionedJid && mentionedJid[0] 
-                ? mentionedJid[0] 
-                : sender;
+        const pfp = await sock.profilePictureUrl(user, 'image');
+        const simpCard = await Jimp.read('https://i.imgur.com/i2hG2V2.png');
+        const userPfp = await Jimp.read(pfp);
 
-        // Get the profile picture URL
-        let avatarUrl;
-        try {
-            avatarUrl = await sock.profilePictureUrl(who, 'image');
-        } catch (error) {
-            console.error('Error fetching profile picture:', error);
-            avatarUrl = 'https://telegra.ph/file/24fa902ead26340f3df2c.png'; // Default avatar
-        }
+        userPfp.resize(256, 256);
+        simpCard.composite(userPfp, 100, 100);
 
-        // Fetch the simp card from the API
-        const apiUrl = `https://some-random-api.com/canvas/misc/simpcard?avatar=${encodeURIComponent(avatarUrl)}`;
-        const response = await fetch(apiUrl);
-        
-        if (!response.ok) {
-            throw new Error(`API responded with status: ${response.status}`);
-        }
+        const buffer = await simpCard.getBufferAsync(Jimp.MIME_PNG);
 
-        // Get the image buffer
-        const imageBuffer = await response.buffer();
-
-        // Send the image with caption
         await sock.sendMessage(chatId, {
-            image: imageBuffer,
-            caption: '*your religion is simping*',
+            image: buffer,
+            caption: 'Certified Simp!',
             contextInfo: {
                 forwardingScore: 1,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
                     newsletterJid: '120363420656466131@newsletter',
-                    newsletterName: 'Lucky Tech Hub Bot',
+                    newsletterName: 'FOXBOT V2',
                     serverMessageId: -1
                 }
             }
         });
-
     } catch (error) {
-        console.error('Error in simp command:', error);
+        console.error('Error creating simp card:', error);
         await sock.sendMessage(chatId, { 
-            text: '❌ Sorry, I couldn\'t generate the simp card. Please try again later!',
+            text: 'Could not create the simp card. Make sure the user has a profile picture.',
             contextInfo: {
                 forwardingScore: 1,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
                     newsletterJid: '120363420656466131@newsletter',
-                    newsletterName: 'Lucky Tech Hub Bot',
+                    newsletterName: 'FOXBOT V2',
                     serverMessageId: -1
                 }
             }
@@ -61,4 +50,6 @@ async function simpCommand(sock, chatId, quotedMsg, mentionedJid, sender) {
     }
 }
 
-module.exports = { simpCommand }; 
+module.exports = {
+    simpCommand,
+};

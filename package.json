@@ -1,13 +1,13 @@
 {
-  "name": "luckytechhubbot",
-  "version": "2.2.6",
+  "name": "foxbot",
+  "version": "2.0.0",
   "description": "WhatsApp Bot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "test": "jest",
-    "docker:build": "docker build -t luckytechhubbot .",
-    "docker:run": "docker run -e SESSION_ID=$SESSION_ID luckytechhubbot"
+    "docker:build": "docker build -t foxbot .",
+    "docker:run": "docker run -e SESSION_ID=$SESSION_ID foxbot"
   },
   "keywords": [
     "whatsapp-bot"
