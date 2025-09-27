@@ -1,104 +1,101 @@
 /**
- * Lucky Tech Hub Bot - A WhatsApp Bot
- * Autorecording Command - Shows fake recording status
+ * FOXBOT V2 - A WhatsApp Bot
+ * Copyright (c) 2024 FOXBOT
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the MIT License.
+ *
+ * Credits:
+ * - Baileys Library by @whiskeysockets
+ * - Pair Code implementation inspired by TechGod143 & DGXEON
  */
 
 const fs = require('fs');
 const path = require('path');
 
-// Path to store the configuration
-const configPath = path.join(__dirname, '..', 'data', 'autorecording.json');
+const configPath = path.join(__dirname, '../data/autorecordingConfig.json');
 
-// Initialize configuration file if it doesn't exist
-function initConfig() {
-    if (!fs.existsSync(configPath)) {
-        fs.writeFileSync(configPath, JSON.stringify({ enabled: false }, null, 2));
+// Function to read the current configuration for autorecording
+function readAutorecordingConfig() {
+    try {
+        if (fs.existsSync(configPath)) {
+            const configData = fs.readFileSync(configPath, 'utf8');
+            return JSON.parse(configData);
+        }
+    } catch (error) {
+        console.error('Error reading autorecording config:', error);
     }
-    return JSON.parse(fs.readFileSync(configPath));
+    return { enabled: false, mode: 'blacklist', list: [] }; // Default config
 }
 
-// Toggle autorecording feature
-async function autorecordingCommand(sock, chatId, message) {
+// Function to write the configuration for autorecording
+function writeAutorecordingConfig(config) {
     try {
-        // Check if sender is the owner (bot itself)
-        if (!message.key.fromMe) {
-            await sock.sendMessage(chatId, {
-                text: '❌ This command is only available for the owner!',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420656466131@newsletter',
-                        newsletterName: 'Lucky Tech Hub Bot',
-                        serverMessageId: -1
-                    }
-                }
-            });
-            return;
-        }
-
-        // Get command arguments
-        const args = message.message?.conversation?.trim().split(' ').slice(1) || 
-                    message.message?.extendedTextMessage?.text?.trim().split(' ').slice(1) || 
-                    [];
-        
-        // Initialize or read config
-        const config = initConfig();
-        
-        // Toggle based on argument or toggle current state if no argument
-        if (args.length > 0) {
-            const action = args[0].toLowerCase();
-            if (action === 'on' || action === 'enable') {
-                config.enabled = true;
-            } else if (action === 'off' || action === 'disable') {
-                config.enabled = false;
-            } else {
-                await sock.sendMessage(chatId, {
-                    text: '❌ Invalid option! Use: .autorecording on/off',
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420656466131@newsletter',
-                            newsletterName: 'Lucky Tech Hub Bot',
-                            serverMessageId: -1
-                        }
-                    }
-                });
-                return;
-            }
-        } else {
-            // Toggle current state
-            config.enabled = !config.enabled;
-        }
-        
-        // Save updated configuration
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-        
-        // Send confirmation message
+    } catch (error) {
+        console.error('Error writing autorecording config:', error);
+    }
+}
+
+// Command to toggle autorecording on or off
+async function autorecordingCommand(sock, chatId, sender, args) {
+    const config = readAutorecordingConfig();
+    const action = args[0]?.toLowerCase();
+
+    if (action === 'on') {
+        config.enabled = true;
+        writeAutorecordingConfig(config);
         await sock.sendMessage(chatId, {
-            text: `✅ Auto-recording has been ${config.enabled ? 'enabled' : 'disabled'}!`,
+            text: '🤖 Autorecording has been enabled.',
             contextInfo: {
                 forwardingScore: 1,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
                     newsletterJid: '120363420656466131@newsletter',
-                    newsletterName: 'Lucky Tech Hub Bot',
+                    newsletterName: 'FOXBOT V2',
                     serverMessageId: -1
                 }
             }
         });
-        
-    } catch (error) {
-        console.error('Error in autorecording command:', error);
+    } else if (action === 'off') {
+        config.enabled = false;
+        writeAutorecordingConfig(config);
         await sock.sendMessage(chatId, {
-            text: '❌ Error processing command!',
+            text: '🤖 Autorecording has been disabled.',
             contextInfo: {
                 forwardingScore: 1,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
                     newsletterJid: '120363420656466131@newsletter',
-                    newsletterName: 'Lucky Tech Hub Bot',
+                    newsletterName: 'FOXBOT V2',
+                    serverMessageId: -1
+                }
+            }
+        });
+    } else if (action === 'blacklist' || action === 'whitelist') {
+        config.mode = action;
+        writeAutorecordingConfig(config);
+        await sock.sendMessage(chatId, {
+            text: `🤖 Autorecording mode set to ${action}.`,
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420656466131@newsletter',
+                    newsletterName: 'FOXBOT V2',
+                    serverMessageId: -1
+                }
+            }
+        });
+    } else {
+        await sock.sendMessage(chatId, {
+            text: `Invalid action. Use 'on', 'off', 'blacklist', or 'whitelist'.`,
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420656466131@newsletter',
+                    newsletterName: 'FOXBOT V2',
                     serverMessageId: -1
                 }
             }
@@ -108,109 +105,56 @@ async function autorecordingCommand(sock, chatId, message) {
 
 // Function to check if autorecording is enabled
 function isAutorecordingEnabled() {
-    try {
-        const config = initConfig();
-        return config.enabled;
-    } catch (error) {
-        console.error('Error checking autorecording status:', error);
-        return false;
-    }
+    const config = readAutorecordingConfig();
+    return config.enabled;
 }
 
-// Function to handle autorecording for regular messages
-async function handleAutorecordingForMessage(sock, chatId, userMessage) {
-    if (isAutorecordingEnabled()) {
-        try {
-            // First subscribe to presence updates for this chat
-            await sock.presenceSubscribe(chatId);
-            
-            // Send available status first
-            await sock.sendPresenceUpdate('available', chatId);
-            await new Promise(resolve => setTimeout(resolve, 10000));
-            
-            // Then send the recording status
-            await sock.sendPresenceUpdate('recording', chatId);
-            
-            // Simulate recording time based on message length with increased minimum time
-            const recordingDelay = Math.max(3000, Math.min(8000, userMessage.length * 150));
-            await new Promise(resolve => setTimeout(resolve, recordingDelay));
-            
-            // Send recording again to ensure it stays visible
-            await sock.sendPresenceUpdate('recording', chatId);
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Finally send paused status
-            await sock.sendPresenceUpdate('paused', chatId);
-            
-            return true; // Indicates recording was shown
-        } catch (error) {
-            console.error('❌ Error sending recording indicator:', error);
-            return false; // Indicates recording failed
-        }
+// Function to handle autorecording logic for messages
+async function handleAutorecordingForMessage(sock, chatId, text) {
+    const config = readAutorecordingConfig();
+    if (!config.enabled) return;
+
+    if (config.mode === 'blacklist' && config.list.includes(chatId)) {
+        return; // Don't record if chatId is in blacklist
     }
-    return false; // Autorecording is disabled
+
+    if (config.mode === 'whitelist' && !config.list.includes(chatId)) {
+        return; // Don't record if chatId is not in whitelist
+    }
+
+    await sock.sendPresenceUpdate('recording', chatId);
 }
 
-// Function to handle autorecording for commands - BEFORE command execution (not used anymore)
+// Function to handle autorecording logic for commands
 async function handleAutorecordingForCommand(sock, chatId) {
-    if (isAutorecordingEnabled()) {
-        try {
-            // First subscribe to presence updates for this chat
-            await sock.presenceSubscribe(chatId);
-            
-            // Send available status first
-            await sock.sendPresenceUpdate('available', chatId);
-            await new Promise(resolve => setTimeout(resolve, 10000));
-            
-            // Then send the recording status
-            await sock.sendPresenceUpdate('recording', chatId);
-            
-            // Keep recording indicator active for commands with increased duration
-            const commandRecordingDelay = 3000;
-            await new Promise(resolve => setTimeout(resolve, commandRecordingDelay));
-            
-            // Send recording again to ensure it stays visible
-            await sock.sendPresenceUpdate('recording', chatId);
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Finally send paused status
-            await sock.sendPresenceUpdate('paused', chatId);
-            
-            return true; // Indicates recording was shown
-        } catch (error) {
-            console.error('❌ Error sending command recording indicator:', error);
-            return false; // Indicates recording failed
-        }
+    const config = readAutorecordingConfig();
+    if (!config.enabled) return;
+
+    if (config.mode === 'blacklist' && config.list.includes(chatId)) {
+        return; // Don't record if chatId is in blacklist
     }
-    return false; // Autorecording is disabled
+
+    if (config.mode === 'whitelist' && !config.list.includes(chatId)) {
+        return; // Don't record if chatId is not in whitelist
+    }
+
+    await sock.sendPresenceUpdate('recording', chatId);
 }
 
-// Function to show recording status AFTER command execution
+// Function to show recording after a command
 async function showRecordingAfterCommand(sock, chatId) {
-    if (isAutorecordingEnabled()) {
-        try {
-            // This function runs after the command has been executed and response sent
-            // So we just need to show a brief recording indicator
-            
-            // Subscribe to presence updates
-            await sock.presenceSubscribe(chatId);
-            
-            // Show recording status briefly
-            await sock.sendPresenceUpdate('recording', chatId);
-            
-            // Keep recording visible for a short time
-            await new Promise(resolve => setTimeout(resolve, 10000));
-            
-            // Then pause
-            await sock.sendPresenceUpdate('paused', chatId);
-            
-            return true;
-        } catch (error) {
-            console.error('❌ Error sending post-command recording indicator:', error);
-            return false;
-        }
+    const config = readAutorecordingConfig();
+    if (!config.enabled) return;
+
+    if (config.mode === 'blacklist' && config.list.includes(chatId)) {
+        return; // Don't record if chatId is in blacklist
     }
-    return false; // Autorecording is disabled
+
+    if (config.mode === 'whitelist' && !config.list.includes(chatId)) {
+        return; // Don't record if chatId is not in whitelist
+    }
+
+    await sock.sendPresenceUpdate('recording', chatId);
 }
 
 module.exports = {
@@ -218,5 +162,5 @@ module.exports = {
     isAutorecordingEnabled,
     handleAutorecordingForMessage,
     handleAutorecordingForCommand,
-    showRecordingAfterCommand
+    showRecordingAfterCommand,
 };

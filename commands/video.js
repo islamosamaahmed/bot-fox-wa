@@ -77,7 +77,7 @@ async function videoCommand(sock, chatId, message) {
             video: { url: videoData.download },
             mimetype: 'video/mp4',
             fileName: `${videoData.title || videoTitle || 'video'}.mp4`,
-            caption: `*${videoData.title || videoTitle || 'Video'}*\n\n> *_Downloaded by Lucky Tech Hub Bot_*`
+            caption: `*${videoData.title || videoTitle || 'Video'}*\n\n> *_Downloaded by FOXBOT V2_*`
         }, { quoted: message });
 
 

@@ -1,104 +1,89 @@
-/**
- * Knight Bot - A WhatsApp Bot
- * Autoread Command - Automatically read all messages
- */
-
 const fs = require('fs');
 const path = require('path');
 
-// Path to store the configuration
-const configPath = path.join(__dirname, '..', 'data', 'autoread.json');
+const configPath = path.join(__dirname, '../data/autoreadConfig.json');
 
-// Initialize configuration file if it doesn't exist
-function initConfig() {
-    if (!fs.existsSync(configPath)) {
-        fs.writeFileSync(configPath, JSON.stringify({ enabled: false }, null, 2));
+// Function to read the current configuration for autoread
+function readAutoreadConfig() {
+    try {
+        if (fs.existsSync(configPath)) {
+            const configData = fs.readFileSync(configPath, 'utf8');
+            return JSON.parse(configData);
+        }
+    } catch (error) {
+        console.error('Error reading autoread config:', error);
     }
-    return JSON.parse(fs.readFileSync(configPath));
+    return { enabled: false, mode: 'blacklist', list: [] }; // Default config
 }
 
-// Toggle autoread feature
-async function autoreadCommand(sock, chatId, message) {
+// Function to write the configuration for autoread
+function writeAutoreadConfig(config) {
     try {
-        // Check if sender is the owner (bot itself)
-        if (!message.key.fromMe) {
-            await sock.sendMessage(chatId, {
-                text: '❌ This command is only available for the owner!',
-                contextInfo: {
-                    forwardingScore: 1,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363420656466131@newsletter',
-                        newsletterName: 'Lucky Tech Hub Bot',
-                        serverMessageId: -1
-                    }
-                }
-            });
-            return;
-        }
-
-        // Get command arguments
-        const args = message.message?.conversation?.trim().split(' ').slice(1) || 
-                    message.message?.extendedTextMessage?.text?.trim().split(' ').slice(1) || 
-                    [];
-        
-        // Initialize or read config
-        const config = initConfig();
-        
-        // Toggle based on argument or toggle current state if no argument
-        if (args.length > 0) {
-            const action = args[0].toLowerCase();
-            if (action === 'on' || action === 'enable') {
-                config.enabled = true;
-            } else if (action === 'off' || action === 'disable') {
-                config.enabled = false;
-            } else {
-                await sock.sendMessage(chatId, {
-                    text: '❌ Invalid option! Use: .autoread on/off',
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: '120363420656466131@newsletter',
-                            newsletterName: 'Lucky Tech Hub Bot',
-                            serverMessageId: -1
-                        }
-                    }
-                });
-                return;
-            }
-        } else {
-            // Toggle current state
-            config.enabled = !config.enabled;
-        }
-        
-        // Save updated configuration
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-        
-        // Send confirmation message
+    } catch (error) {
+        console.error('Error writing autoread config:', error);
+    }
+}
+
+// Command to toggle autoread on or off
+async function autoreadCommand(sock, chatId, sender, args) {
+    const config = readAutoreadConfig();
+    const action = args[0]?.toLowerCase();
+
+    if (action === 'on') {
+        config.enabled = true;
+        writeAutoreadConfig(config);
         await sock.sendMessage(chatId, {
-            text: `✅ Auto-read has been ${config.enabled ? 'enabled' : 'disabled'}!`,
+            text: '🤖 Autoread has been enabled.',
             contextInfo: {
                 forwardingScore: 1,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
                     newsletterJid: '120363420656466131@newsletter',
-                    newsletterName: 'Lucky Tech Hub Bot',
+                    newsletterName: 'FOXBOT V2',
                     serverMessageId: -1
                 }
             }
         });
-        
-    } catch (error) {
-        console.error('Error in autoread command:', error);
+    } else if (action === 'off') {
+        config.enabled = false;
+        writeAutoreadConfig(config);
         await sock.sendMessage(chatId, {
-            text: '❌ Error processing command!',
+            text: '🤖 Autoread has been disabled.',
             contextInfo: {
                 forwardingScore: 1,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
                     newsletterJid: '120363420656466131@newsletter',
-                    newsletterName: 'Lucky Tech Hub Bot',
+                    newsletterName: 'FOXBOT V2',
+                    serverMessageId: -1
+                }
+            }
+        });
+    } else if (action === 'blacklist' || action === 'whitelist') {
+        config.mode = action;
+        writeAutoreadConfig(config);
+        await sock.sendMessage(chatId, {
+            text: `🤖 Autoread mode set to ${action}.`,
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420656466131@newsletter',
+                    newsletterName: 'FOXBOT V2',
+                    serverMessageId: -1
+                }
+            }
+        });
+    } else {
+        await sock.sendMessage(chatId, {
+            text: `Invalid action. Use 'on', 'off', 'blacklist', or 'whitelist'.`,
+            contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363420656466131@newsletter',
+                    newsletterName: 'FOXBOT V2',
                     serverMessageId: -1
                 }
             }
@@ -108,88 +93,32 @@ async function autoreadCommand(sock, chatId, message) {
 
 // Function to check if autoread is enabled
 function isAutoreadEnabled() {
-    try {
-        const config = initConfig();
-        return config.enabled;
-    } catch (error) {
-        console.error('Error checking autoread status:', error);
-        return false;
-    }
+    const config = readAutoreadConfig();
+    return config.enabled;
 }
 
-// Function to check if bot is mentioned in a message
-function isBotMentionedInMessage(message, botNumber) {
-    if (!message.message) return false;
-    
-    // Check for mentions in contextInfo (works for all message types)
-    const messageTypes = [
-        'extendedTextMessage', 'imageMessage', 'videoMessage', 'stickerMessage',
-        'documentMessage', 'audioMessage', 'contactMessage', 'locationMessage'
-    ];
-    
-    // Check for explicit mentions in mentionedJid array
-    for (const type of messageTypes) {
-        if (message.message[type]?.contextInfo?.mentionedJid) {
-            const mentionedJid = message.message[type].contextInfo.mentionedJid;
-            if (mentionedJid.some(jid => jid === botNumber)) {
-                return true;
-            }
-        }
-    }
-    
-    // Check for text mentions in various message types
-    const textContent = 
-        message.message.conversation || 
-        message.message.extendedTextMessage?.text ||
-        message.message.imageMessage?.caption ||
-        message.message.videoMessage?.caption || '';
-    
-    if (textContent) {
-        // Check for @mention format
-        const botUsername = botNumber.split('@')[0];
-        if (textContent.includes(`@${botUsername}`)) {
-            return true;
-        }
-        
-        // Check for bot name mentions (optional, can be customized)
-        const botNames = [global.botname?.toLowerCase(), 'bot', 'luckytechhub', 'lucky tech hub bot'];
-        const words = textContent.toLowerCase().split(/\s+/);
-        if (botNames.some(name => words.includes(name))) {
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-// Function to handle autoread functionality
+// Function to handle autoread logic
 async function handleAutoread(sock, message) {
-    if (isAutoreadEnabled()) {
-        // Get bot's ID
-        const botNumber = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-        
-        // Check if bot is mentioned
-        const isBotMentioned = isBotMentionedInMessage(message, botNumber);
-        
-        // If bot is mentioned, read the message internally but don't mark as read in UI
-        if (isBotMentioned) {
-            
-            // We don't call sock.readMessages() here, so the message stays unread in the UI
-            return false; // Indicates message was not marked as read
-        } else {
-            // For regular messages, mark as read normally
-            const key = { remoteJid: message.key.remoteJid, id: message.key.id, participant: message.key.participant };
-            await sock.readMessages([key]);
-            //console.log('✅ Marked message as read from ' + (message.key.participant || message.key.remoteJid).split('@')[0]);
-            return true; // Indicates message was marked as read
-        }
+    const config = readAutoreadConfig();
+    if (!config.enabled) return;
+
+    const sender = message.key.remoteJid;
+    const isGroup = sender.endsWith('@g.us');
+    
+    if (config.mode === 'blacklist' && config.list.includes(sender)) {
+        return; // Don't read if sender is in blacklist
     }
-    return false; // Autoread is disabled
+    
+    if (config.mode === 'whitelist' && !config.list.includes(sender)) {
+        return; // Don't read if sender is not in whitelist
+    }
+
+    await sock.readMessages([message.key]);
 }
 
 module.exports = {
     autoreadCommand,
     isAutoreadEnabled,
-    isBotMentionedInMessage,
-    handleAutoread
+    handleAutoread,
 };
+const botNames = [global.botname?.toLowerCase(), 'bot', 'foxbot', 'foxbot v2'];

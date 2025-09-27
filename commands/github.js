@@ -1,34 +1,35 @@
-const moment = require('moment-timezone');
-const fetch = require('node-fetch');
-const fs = require('fs');
-const path = require('path');
+const { Octokit } = require('@octokit/rest');
+const octokit = new Octokit();
 
+async function githubCommand(sock, chatId, args) {
+    if (!args) {
+        await sock.sendMessage(chatId, { text: 'Please provide a GitHub username!' });
+        return;
+    }
 
-async function githubCommand(sock, chatId, message) {
-  try {
-    const res = await fetch('https://api.github.com/repos/Tomilucky218/Lucky-XD2');
-    if (!res.ok) throw new Error('Error fetching repository data');
-    const json = await res.json();
+    try {
+        const { data } = await octokit.users.getByUsername({ username: args });
 
-    let txt = `╭══✦〔 *Lucky Tech Hub Bot* 〕✦═╮\n│ \n`;
-    txt += `│🧾 *Name* : ${json.name}\n`;
-    txt += `│🥸 *Watchers* : ${json.watchers_count}\n`;
-    txt += `│📦 *Size* : ${(json.size / 1024).toFixed(2)} MB\n`;
-    txt += `│🕰️ *Last Updated* : ${moment(json.updated_at).format('DD/MM/YY - HH:mm:ss')}\n`;
-    txt += `│🔗 *URL* : ${json.html_url}\n`;
-    txt += `│🪩 *Forks* : ${json.forks_count}\n`;
-    txt += `│✨ *Stars* : ${json.stargazers_count}\n│ \n`;
-    txt += `│ 💥 *Lucky Tech Hub Bot*\n`;
-    txt += `╰═✦═✦═✦═✦═✦═✦═✦═✦═✦═╯`;
+        let txt = `╭══✦〔 *FOXBOT V2* 〕✦═╮\n│ \n`;
+        txt += `│  👤 *Username:* ${data.login}\n`;
+        txt += `│  📛 *Name:* ${data.name || 'N/A'}\n`;
+        txt += `│  🏢 *Company:* ${data.company || 'N/A'}\n`;
+        txt += `│  📝 *Bio:* ${data.bio || 'N/A'}\n`;
+        txt += `│  🌍 *Location:* ${data.location || 'N/A'}\n`;
+        txt += `│  🔗 *Profile URL:* ${data.html_url}\n`;
+        txt += `│  👥 *Followers:* ${data.followers}\n`;
+        txt += `│  👤 *Following:* ${data.following}\n`;
+        txt += `│  📚 *Public Repos:* ${data.public_repos}\n`;
+        txt += `│ \n`;
+        txt += `│ 💥 *FOXBOT V2*\n`;
+        txt += `╰═✦═✦═✦═✦═✦═✦═✦═✦═✦═╯`;
 
-    // Use the local asset image
-    const imgPath = path.join(__dirname, '../assets/bot_image.jpg');
-    const imgBuffer = fs.readFileSync(imgPath);
+        await sock.sendMessage(chatId, { image: { url: data.avatar_url }, caption: txt });
 
-    await sock.sendMessage(chatId, { image: imgBuffer, caption: txt }, { quoted: message });
-  } catch (error) {
-    await sock.sendMessage(chatId, { text: '❌ Error fetching repository information.' }, { quoted: message });
-  }
+    } catch (error) {
+        console.error('Error fetching GitHub user:', error);
+        await sock.sendMessage(chatId, { text: 'Could not find the GitHub user.' });
+    }
 }
 
-module.exports = githubCommand; 
+module.exports = githubCommand;
